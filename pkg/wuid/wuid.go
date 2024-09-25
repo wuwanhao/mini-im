@@ -17,7 +17,7 @@ func Init(dsn string) {
 		}
 		return db, true, nil
 	}
-	w := wuid.NewWUID("default", nil)
+	w = wuid.NewWUID("default", nil)
 	_ = w.LoadH28FromMysql(newDB, "wuid")
 }
 
@@ -25,5 +25,6 @@ func GenUID(dsn string) string {
 	if w == nil {
 		Init(dsn)
 	}
+
 	return fmt.Sprintf("%#016x", w.Next())
 }

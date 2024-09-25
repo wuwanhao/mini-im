@@ -15,12 +15,10 @@ var (
 
 type (
 
-	/**
-	要添加新方法则直接修改UserModel接口和给customUserModel添加方法
-	*/
-	// UserModel的接口继承了userModel_gen.go文件中的userModel接口
+	// UserModel的接口继承了userModel_gen.go文件中的userModel接口,要添加新方法则直接修改UserModel接口和给customUserModel添加方法
 	UsersModel interface {
 		usersModel
+		FindByPhone(ctx context.Context, phone string) (*Users, error)
 	}
 
 	// customUsersModel继承了默认模型defaultUsersModel的所有功能，可以使用 defaultUserModel 的所有方法，并可以扩展更多自定义方法
