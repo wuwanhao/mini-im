@@ -1,13 +1,12 @@
 package main
 
 import (
+	"app/apps/user/rpc/internal/config"
+	"app/apps/user/rpc/internal/server"
+	"app/apps/user/rpc/internal/svc"
+	"app/apps/user/rpc/user"
 	"flag"
 	"fmt"
-
-	"rpc/internal/config"
-	"rpc/internal/server"
-	"rpc/internal/svc"
-	"rpc/user"
 
 	"github.com/zeromicro/go-zero/core/conf"
 	"github.com/zeromicro/go-zero/core/service"
