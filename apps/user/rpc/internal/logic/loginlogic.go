@@ -6,16 +6,16 @@ import (
 	"app/apps/user/rpc/user"
 	"app/pkg/ctxdata"
 	"app/pkg/encrypt"
+	"app/pkg/xerr"
 	"context"
-	"errors"
-	"fmt"
+	"github.com/pkg/errors"
 	"github.com/zeromicro/go-zero/core/logx"
 	"time"
 )
 
 var (
-	ErrPhoneNotRegister = errors.New("手机号未注册")
-	ErrPasswordError    = errors.New("密码错误")
+	ErrPhoneNotRegister = xerr.New(xerr.SERVER_COMMON_ERROR, "手机号未注册")
+	ErrPasswordError    = xerr.New(xerr.SERVER_COMMON_ERROR, "密码错误")
 )
 
 type LoginLogic struct {
@@ -37,26 +37,24 @@ func (l *LoginLogic) Login(in *user.LoginRequest) (*user.LoginResponse, error) {
 
 	// 1.通过手机号验证用户是否注册
 	userEntity, err := l.svcCtx.UserModels.FindByPhone(l.ctx, in.Phone)
-	fmt.Println("userEntity:", userEntity)
-	fmt.Println(in.Phone)
 	if err != nil {
 		if err == models.ErrNotFound {
-			return nil, ErrPhoneNotRegister
+			return nil, errors.WithStack(ErrPhoneNotRegister)
 		}
-		return nil, err
+		return nil, errors.Wrapf(xerr.NewDBError(), "findByPhone err:%v, param:%v", err, in.Phone)
 	}
 
 	// 2.校验密码
 	validateResult := encrypt.ValidatePasswordHash(in.Password, userEntity.Password.String)
 	if !validateResult {
-		return nil, ErrPasswordError
+		return nil, errors.WithStack(ErrPasswordError)
 	}
 
 	// 3.生成并返回 token
 	now := time.Now().Unix()
 	token, err := ctxdata.GetJwtToken(l.svcCtx.Config.Jwt.AccessSecret, now, l.svcCtx.Config.Jwt.AccessExpire, userEntity.Id)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrapf(xerr.NewDBError(), "GetJwtToken err:%v", err)
 	}
 	return &user.LoginResponse{
 		Token:  token,
