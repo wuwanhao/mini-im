@@ -13,5 +13,5 @@ Cache:
     Password:
     Type: node
 Jwt:
-  AccessSecret: "123456"
+  AccessSecret: "12345678"
   AccessExpire: 86400

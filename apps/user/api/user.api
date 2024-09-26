@@ -1,0 +1,40 @@
+syntax = "v1"
+
+// api 服务的接口描述
+info(
+	title: "用户服务实例对象"
+)
+
+// 包含
+import (
+	"domain.api"
+)
+
+// --------------user API v1-------------
+// no need to login
+
+@server(
+	prefix: v1/user  // 路由前缀
+	group: user // 路由组
+)
+service user {
+	@doc "用户注册"
+	@handler register
+	post /register (RegisterReq) returns (RegisterResp)
+
+	@doc "用户登录"
+	@handler login
+	post /login (LoginReq) returns (LoginResp)
+}
+
+// no need to login
+@server(
+	prefix: v1/user
+	group: user
+	jwt: JwtAuth
+)
+service user {
+	@doc "获取用户信息"
+	@handler detail
+	get /user (UserInfoReq) returns (UserInfoResp)
+}

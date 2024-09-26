@@ -1,0 +1,49 @@
+syntax = "v1"
+
+info(
+    title: "用户服务实例对象"
+)
+
+type User {
+    Id string `json:"id"`
+    NickName string `json:"nickname"`
+    Mobile string `json:"mobile"`
+    Sex byte `json:"sex"`
+    Avatar string `json:"avatar"`
+}
+
+// 注册相关请求参数
+type (
+    RegisterReq {
+        Phone string `json:"phone"`
+        NickName string `json:"nickname"`
+        Password string `json:"password"`
+        Sex byte `json:"sex"`
+        Avatar string `json:"avatar"`
+    }
+    RegisterResp {
+        Token string `json:"token"`
+        Expire int64 `json:"expire"`
+    }
+)
+
+// 登录参数
+type (
+    LoginReq {
+        Phone string `json:"phone"`
+        Password string `json:"password"`
+    }
+    LoginResp {
+        Token string `json:"token"`
+        Expire int64 `json:"expire"`
+    }
+)
+
+// 用户信息相关参数
+type (
+    UserInfoReq {
+    }
+    UserInfoResp {
+        Info User `json:"info"`
+    }
+)
