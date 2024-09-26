@@ -4,8 +4,9 @@ import (
 	"app/apps/user/models"
 	"app/apps/user/rpc/internal/svc"
 	"app/apps/user/rpc/user"
+	"github.com/pkg/errors"
+
 	"context"
-	"errors"
 	"github.com/jinzhu/copier"
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -32,16 +33,16 @@ func (l *GetUserInfoLogic) GetUserInfo(in *user.GetUserInfoRequest) (*user.GetUs
 	userEntity, err := l.svcCtx.UserModels.FindOne(l.ctx, in.Id)
 	if err != nil {
 		if nil == models.ErrNotFound {
-			return nil, ErrUserNotFound
+			return nil, errors.Wrapf(ErrUserNotFound, "用户不存在: %v", in.Id)
 		} else {
-			return nil, err
+			return nil, errors.WithStack(err)
 		}
 	}
 
 	var resp user.UserEntity
 	err = copier.Copy(&resp, userEntity)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	return &user.GetUserInfoResponse{
 		User: &resp,

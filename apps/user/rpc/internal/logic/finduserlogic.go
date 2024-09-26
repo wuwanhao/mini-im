@@ -6,6 +6,7 @@ import (
 	"app/apps/user/rpc/user"
 	"context"
 	"github.com/jinzhu/copier"
+	"github.com/pkg/errors"
 	"github.com/zeromicro/go-zero/core/logx"
 )
 
@@ -42,13 +43,13 @@ func (l *FindUserLogic) FindUser(in *user.FindUserRequest) (*user.FindUserRespon
 	}
 
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	var resp []*user.UserEntity
 	err = copier.Copy(&resp, userEntities)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	return &user.FindUserResponse{
 		Users: resp,

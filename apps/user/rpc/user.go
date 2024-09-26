@@ -5,6 +5,7 @@ import (
 	"app/apps/user/rpc/internal/server"
 	"app/apps/user/rpc/internal/svc"
 	"app/apps/user/rpc/user"
+	"app/pkg/interceptor/rpcserver"
 	"flag"
 	"fmt"
 
@@ -31,6 +32,8 @@ func main() {
 			reflection.Register(grpcServer)
 		}
 	})
+	// 添加错误日志拦截器（grpc 拦截器）
+	s.AddUnaryInterceptors(rpcserver.LogInterceptor)
 	defer s.Stop()
 
 	fmt.Printf("Starting rpc server at %s...\n", c.ListenOn)

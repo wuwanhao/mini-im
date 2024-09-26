@@ -14,6 +14,8 @@ import (
 )
 
 var (
+
+	// 使用系统内部自定义的错误对象
 	ErrPhoneNotRegister = xerr.New(xerr.SERVER_COMMON_ERROR, "手机号未注册")
 	ErrPasswordError    = xerr.New(xerr.SERVER_COMMON_ERROR, "密码错误")
 )
@@ -39,8 +41,10 @@ func (l *LoginLogic) Login(in *user.LoginRequest) (*user.LoginResponse, error) {
 	userEntity, err := l.svcCtx.UserModels.FindByPhone(l.ctx, in.Phone)
 	if err != nil {
 		if err == models.ErrNotFound {
+			// errors.WithStack(ErrPhoneNotRegister) 返回普通形式的错误
 			return nil, errors.WithStack(ErrPhoneNotRegister)
 		}
+		//  errors.Wrapf(xerr.NewDBError(), "findByPhone err:%v, param:%v", err, in.Phone) 返回详细信息的错误
 		return nil, errors.Wrapf(xerr.NewDBError(), "findByPhone err:%v, param:%v", err, in.Phone)
 	}
 
