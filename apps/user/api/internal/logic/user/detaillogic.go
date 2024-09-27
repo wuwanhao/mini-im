@@ -5,6 +5,7 @@ import (
 	"app/pkg/ctxdata"
 	"context"
 	"github.com/jinzhu/copier"
+	"github.com/pkg/errors"
 
 	"app/apps/user/api/internal/svc"
 	"app/apps/user/api/internal/types"
@@ -33,13 +34,13 @@ func (l *DetailLogic) Detail(req *types.UserInfoReq) (resp *types.UserInfoResp, 
 
 	userInfoResp, err := l.svcCtx.User.GetUserInfo(l.ctx, &userclient.GetUserInfoRequest{Id: uid})
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 
 	var user types.User
 	err = copier.Copy(&user, userInfoResp.User)
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	return &types.UserInfoResp{Info: user}, nil
 
