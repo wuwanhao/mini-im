@@ -1,0 +1,174 @@
+syntax = "proto3";
+
+package social;
+
+option go_package = "./rpc";
+
+// --------------model------------------
+message Friends {
+  int32 id = 1;
+  string userId = 2;
+  string remark = 3;
+  int32 addSource = 4; // 添加来源
+  string friendUid = 5;
+}
+
+
+// 添加用户的请求
+message FriendRequest {
+  int32 id = 1;
+  string userId = 2;
+  string reqUid = 3;
+  string reqMsg = 4;
+  int64 reqTime = 5;
+  int32 handleResult = 6;  // 处理结果
+}
+
+// 群组
+message Groups {
+  string id = 1;
+  string name = 2;
+  string icon = 3;
+  int32 status = 4;
+  string creator_uid = 5;
+  int32 groupType = 6;
+  bool isVerify = 7;
+  string notification = 8; // 公告通知
+  string notificationUid = 9;
+}
+
+// 群成员
+message GroupMembers {
+  int32 id = 1; // 群成员ID
+  string groupId = 2;
+  string userId = 3; // 该成员 userID
+  int32 roleLevel = 6; // 角色等级
+  int64 joinTime = 7; // 入群时间
+  int32 joinSource = 8; // 入群来源
+  string inviterUid = 9; // 邀请人 ID
+  string operateUid = 10; // 操作人 I  D
+}
+
+// 入群请求
+message GroupRequests {
+  int32 id = 1;
+  string groupId = 2;
+  string reqId = 3;
+  string reqMsg = 4;
+  int64 reqTime = 5;
+  int32 joinSource = 6;
+  string inviterUid = 7;
+  string handleUid = 8;
+  int32 handleResult = 9; // 处理结果
+}
+
+// req resp
+message FriendPutInReq {
+  string userId = 1;
+  string reqUid = 2;
+  string reqMsg = 3;
+  int64 reqTime = 4;
+}
+message FriendPutInResp {}
+
+message FriendPutInHandleReq {
+  int32 friendReqId = 1;
+  string reqUid = 2;
+  int32 handleResult = 3;
+}
+message FriendPutInHandleResp {}
+
+
+// 获取某个用户的添加好友申请列表
+message FriendPutInListReq {
+  string userId = 1;
+}
+message FriendPutInListResp {
+  repeated FriendRequest list = 1;
+}
+
+// 获取某个用户的好友列表请求
+message FriendListReq {
+  string userId = 1;
+}
+message FriendListResp {
+  repeated Friends list = 1;
+}
+
+// 创建群组请求
+message GroupCreateReq {
+  string name = 1;
+  string icon = 2;
+  int32 status = 3;
+  string creator_uid = 4;
+}
+message GroupCreateResp {}
+
+// 加群请求
+message GroupPutInReq {
+  string groupId = 1;
+  string reqId = 2;
+  string reqMsg = 3;
+  int64 reqTime = 4;
+  int32 joinSource = 5;
+  string inviterUid = 6;
+}
+message GroupPutInResp {}
+
+
+// 某个群组的加群请求列表
+message GroupPutInListReq {
+  string groupId = 1;
+}
+message GroupPutInListResp {
+  repeated GroupRequests list = 1;
+}
+
+// 加群请求
+message GroupPutInHandleReq {
+  int32 groupReqId = 1;
+  string groupId = 2;
+  string handleUid = 3;
+  int32 handleResult = 4; // 处理结果
+  string userId = 5;
+  string username = 6;
+  string userAvatarUrl = 7;
+}
+message GroupPutInHandleResp {}
+
+
+// 某个用户的所有群
+message GroupListReq {
+  string userId = 1;
+}
+message GroupListResp {
+  repeated Groups list = 1;
+}
+
+// 某个群的所有用户（群成员）
+message GroupMemberListReq {
+  string groupId = 1;
+}
+message GroupMemberListResp {
+  repeated GroupMembers list = 1;
+}
+
+// ---------------service-----------------
+service social {
+  // 好友业务：请求添加好友、通过或拒绝申请、好有列表
+  rpc FriendPutIn(FriendPutInReq) returns(FriendPutInResp);
+  rpc FriendPutInHandle(FriendPutInHandleReq) returns(FriendPutInHandleResp);
+  rpc FriendList(FriendListReq) returns(FriendListResp);
+  rpc FriendPutInList(FriendPutInListReq) returns(FriendPutInListResp);
+
+  // 群组业务：创建群组、修改群、群公告、申请群、加群请求列表、加群请求处理...
+  rpc GroupCreate(GroupCreateReq) returns(GroupCreateResp);  // 创建群
+  rpc GroupPutIn(GroupPutInReq) returns(GroupPutInResp); // 加群
+  rpc GroupPutInList(GroupPutInListReq) returns(GroupPutInListResp); // 某个群组的加群请求列表
+  rpc GroupPutInHandle(GroupPutInHandleReq) returns(GroupPutInHandleResp);
+  rpc GroupList(GroupListReq) returns(GroupListResp); // 获取某个用户的所有群
+  rpc GroupMemberList(GroupMemberListReq) returns(GroupMemberListResp); // 获取某个群的所有用户（群成员）
+
+}
+
+
