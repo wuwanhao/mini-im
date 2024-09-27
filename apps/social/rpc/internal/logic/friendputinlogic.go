@@ -1,7 +1,13 @@
 package logic
 
 import (
+	socialmodels "app/apps/social/models"
+	"app/pkg/constants"
+	"app/pkg/xerr"
 	"context"
+	"database/sql"
+	"github.com/pkg/errors"
+	"time"
 
 	"app/apps/social/rpc/internal/svc"
 	"app/apps/social/rpc/rpc"
@@ -23,9 +29,45 @@ func NewFriendPutInLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Frien
 	}
 }
 
-// 好友业务：请求添加好友、通过或拒绝申请、好有列表
+// FriendPutIn 添加好友申请
 func (l *FriendPutInLogic) FriendPutIn(in *rpc.FriendPutInReq) (*rpc.FriendPutInResp, error) {
-	// todo: add your logic here and delete this line
+	// 1.判断申请人与目标好友是否已经是好友关系
+	friends, err := l.svcCtx.FriendsModel.FindByUidAndFriendUid(l.ctx, in.UserId, in.ReqUid)
+	if err != nil && err != socialmodels.ErrNotFound {
+		return nil, errors.Wrapf(xerr.NewDBError(), "find frends err by userId: %s, reqUid: %s", in.UserId, in.ReqUid)
+	}
+	if friends != nil {
+		// 好友关系已经存在
+		return nil, errors.Wrapf(xerr.NewMsgErr("好友关系已存在"), "userId: %s, reqUid: %s", in.UserId, in.ReqUid)
+	}
+
+	// 2.判断是否已经存在好友申请记录
+	friendRequest, err := l.svcCtx.FriendRequestsModel.FindByReqUidAndUserId(l.ctx, in.ReqUid, in.UserId)
+	if err != nil && err != socialmodels.ErrNotFound {
+		return nil, errors.Wrapf(xerr.NewDBError(), "find friend request err by reqUid: %s, userId: %s", in.ReqUid, in.UserId)
+	}
+	if friendRequest != nil {
+		// 好友申请记录已存在
+		return nil, errors.Wrapf(xerr.NewMsgErr("好友申请记录已存在"), "reqUid: %s, userId: %s", in.ReqUid, in.UserId)
+	}
+
+	// 3.添加好友申请记录
+	_, err = l.svcCtx.FriendRequestsModel.Insert(l.ctx, &socialmodels.FriendRequests{
+		UserId: in.UserId,
+		ReqUid: in.ReqUid,
+		ReqMsg: sql.NullString{
+			String: in.ReqMsg,
+			Valid:  true,
+		},
+		ReqTime: time.Unix(in.ReqTime, 0), // 添加好友的时间只精确到秒
+		HandleResult: sql.NullInt64{
+			Int64: int64(constants.NoHandlerResult), // 添加好友请求创建时默认是未处理
+			Valid: false,
+		},
+	})
+	if err != nil {
+		return nil, errors.Wrapf(xerr.NewDBError(), "insert friend request err by reqUid: %s, userId: %s", in.ReqUid, in.UserId)
+	}
 
 	return &rpc.FriendPutInResp{}, nil
 }
