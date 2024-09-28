@@ -1,8 +1,10 @@
 package models
 
 import (
+	"app/pkg/constants"
 	"context"
 	"fmt"
+	"github.com/pkg/errors"
 	"github.com/zeromicro/go-zero/core/stores/cache"
 	"github.com/zeromicro/go-zero/core/stores/sqlc"
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
@@ -16,6 +18,8 @@ type (
 	FriendRequestsModel interface {
 		friendRequestsModel
 		FindByReqUidAndUserId(ctx context.Context, reqUid string, userId string) (*FriendRequests, error)
+		ListNoHandler(ctx context.Context, userId string) ([]*FriendRequests, error)
+		Trans(ctx context.Context, fn func(ctx context.Context, conn sqlx.SqlConn)) error
 	}
 
 	customFriendRequestsModel struct {
@@ -38,6 +42,23 @@ func (c *customFriendRequestsModel) FindByReqUidAndUserId(ctx context.Context, r
 
 	return &friendRequests, nil
 }
+
+// ListNoHandler 获取当前用户未处理的好友申请列表
+func (c *customFriendRequestsModel) ListNoHandler(ctx context.Context, userId string) ([]*FriendRequests, error) {
+	query := fmt.Sprintf("select %s from %s where `user_id` = ? and `handle_result` = ?", friendRequestsRows, c.table)
+	var list []*FriendRequests
+	err := c.QueryRowsNoCacheCtx(ctx, &list, query, userId, constants.NoHandlerResult)
+	if err != nil {
+		return nil, errors.Wrapf(err, "ListNoHandler error, userId: %v", userId)
+	}
+	return list, nil
+}
+
+func (c *customFriendRequestsModel) Trans(ctx context.Context, fn func(ctx context.Context, conn sqlx.SqlConn)) error {
+	return c.TransactCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) error {
+		return fn(ctx, conn)
+	})
+} // todo
 
 // NewFriendRequestsModel returns a model for the database table.
 func NewFriendRequestsModel(conn sqlx.SqlConn, c cache.CacheConf, opts ...cache.Option) FriendRequestsModel {

@@ -8,3 +8,7 @@ const (
 	RefuseHandlerResult                          // 拒绝
 	CancelHandlerResult                          // 取消
 )
+
+const (
+	ErrFriendReqAlreadyPassed = 1
+)
