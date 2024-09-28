@@ -3,6 +3,7 @@ package models
 import (
 	"app/pkg/constants"
 	"context"
+	"database/sql"
 	"fmt"
 	"github.com/pkg/errors"
 	"github.com/zeromicro/go-zero/core/stores/cache"
@@ -19,7 +20,9 @@ type (
 		friendRequestsModel
 		FindByReqUidAndUserId(ctx context.Context, reqUid string, userId string) (*FriendRequests, error)
 		ListNoHandler(ctx context.Context, userId string) ([]*FriendRequests, error)
-		Trans(ctx context.Context, fn func(ctx context.Context, conn sqlx.SqlConn)) error
+		// ---- 支持事务的操作，以下操作共用一个 session 会话------
+		TransCtx(ctx context.Context, fn func(ctx context.Context, session sqlx.Session) error) error // 这里用 sqlx.Session来执行事务
+		TransUpdate(ctx context.Context, session sqlx.Session, data *FriendRequests) error            // 支持事务的更新
 	}
 
 	customFriendRequestsModel struct {
@@ -54,11 +57,22 @@ func (c *customFriendRequestsModel) ListNoHandler(ctx context.Context, userId st
 	return list, nil
 }
 
-func (c *customFriendRequestsModel) Trans(ctx context.Context, fn func(ctx context.Context, conn sqlx.SqlConn)) error {
-	return c.TransactCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) error {
+// Trans 用于执行事务的方法
+func (c *customFriendRequestsModel) TransCtx(ctx context.Context, fn func(ctx context.Context, session sqlx.Session) error) error {
+	return c.TransactCtx(ctx, func(ctx context.Context, conn sqlx.Session) error {
 		return fn(ctx, conn)
 	})
-} // todo
+}
+
+// TransUpdate 支持事务的修改
+func (m *defaultFriendRequestsModel) TransUpdate(ctx context.Context, session sqlx.Session, data *FriendRequests) error {
+	friendRequestsIdKey := fmt.Sprintf("%s%v", cacheFriendRequestsIdPrefix, data.Id)
+	_, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
+		query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, friendRequestsRowsWithPlaceHolder)
+		return session.ExecCtx(ctx, query, data.UserId, data.ReqUid, data.ReqMsg, data.ReqTime, data.HandleResult, data.HandleMsg, data.HandledAt, data.Id)
+	}, friendRequestsIdKey)
+	return err
+}
 
 // NewFriendRequestsModel returns a model for the database table.
 func NewFriendRequestsModel(conn sqlx.SqlConn, c cache.CacheConf, opts ...cache.Option) FriendRequestsModel {

@@ -8,6 +8,7 @@ import (
 
 type ServiceContext struct {
 	Config config.Config
+	// 将用到的模型在服务核心上下文中进行加载
 	socialmodels.GroupsModel
 	socialmodels.GroupMembersModel
 	socialmodels.GroupRequestsModel
