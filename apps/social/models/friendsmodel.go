@@ -18,6 +18,7 @@ type (
 	FriendsModel interface {
 		friendsModel
 		FindByUidAndFriendUid(ctx context.Context, uid string, friendUid string) (*Friends, error)
+		ListByUserId(ctx context.Context, uid string) ([]*Friends, error)
 		TransBatchInsert(ctx context.Context, session sqlx.Session, data ...*Friends) (sql.Result, error)
 	}
 
@@ -40,6 +41,22 @@ func (c *customFriendsModel) FindByUidAndFriendUid(ctx context.Context, uid stri
 	}
 
 	return &friends, nil
+}
+
+// ListByUserId 查询某个用户的好友列表
+func (c *customFriendsModel) ListByUserId(ctx context.Context, uid string) ([]*Friends, error) {
+
+	query := fmt.Sprintf("select %s from %s where `user_id` = ? ", friendsRows, c.table)
+	var friendsList []*Friends
+	err := c.QueryRowsNoCacheCtx(ctx, &friendsList, query, uid)
+	if err != nil {
+		if err == sqlc.ErrNotFound {
+			return nil, ErrNotFound
+		}
+		return nil, err
+	}
+
+	return friendsList, nil
 }
 
 // TransBatchInsert 支持事务的批量插入

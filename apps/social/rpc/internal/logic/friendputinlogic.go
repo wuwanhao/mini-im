@@ -62,7 +62,7 @@ func (l *FriendPutInLogic) FriendPutIn(in *rpc.FriendPutInReq) (*rpc.FriendPutIn
 		ReqTime: time.Unix(in.ReqTime, 0), // 添加好友的时间只精确到秒
 		HandleResult: sql.NullInt64{
 			Int64: int64(constants.NoHandlerResult), // 添加好友请求创建时默认是未处理
-			Valid: false,
+			Valid: true,
 		},
 	})
 	if err != nil {

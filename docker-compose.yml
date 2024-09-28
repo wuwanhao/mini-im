@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: e68e2614955c
+    container_name: mysql8_mini_im
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: test
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  redis:
+    image: 0b4893f528c4
+    container_name: redis_mini_im
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  etcd:
+    image: 644e5eb1f2ee
+    container_name: etcd_mini_im
+    environment:
+      ETCD_DATA_DIR: /etcd-data
+      ETCD_INITIAL_CLUSTER_STATE: new
+      ETCD_INITIAL_CLUSTER_TOKEN: etcd-cluster-1
+      ETCDCTL_API: 3
+    ports:
+      - "2379:2379"
+      - "2380:2380"
+    volumes:
+      - etcd_data:/etcd-data
+
+volumes:
+  mysql_data:
+  redis_data:
+  etcd_data:
