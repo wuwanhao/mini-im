@@ -75,6 +75,7 @@ message FriendPutInHandleReq {
   int32 friendReqId = 1;
   string reqUid = 2;
   int32 handleResult = 3;
+  string handleMsg = 4;
 }
 message FriendPutInHandleResp {}
 

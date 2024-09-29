@@ -39,13 +39,13 @@ type (
 
 	GroupMembers struct {
 		Id          int64          `db:"id"`
-		GroupId     string         `db:"group_id"`
-		UserId      string         `db:"user_id"`
-		RoleLevel   int64          `db:"role_level"`
-		JoinTime    sql.NullTime   `db:"join_time"`
-		JoinSource  sql.NullInt64  `db:"join_source"`
-		InviterUid  sql.NullString `db:"inviter_uid"`
-		OperatorUid sql.NullString `db:"operator_uid"`
+		GroupId     string         `db:"group_id"`     // 群ID
+		UserId      string         `db:"user_id"`      // 用户ID
+		RoleLevel   int64          `db:"role_level"`   // 角色等级
+		JoinTime    int64          `db:"join_time"`    // 入群时间
+		JoinSource  sql.NullInt64  `db:"join_source"`  // 入群方式
+		InviterUid  sql.NullString `db:"inviter_uid"`  // 邀请者ID
+		OperatorUid sql.NullString `db:"operator_uid"` // 操作者ID
 	}
 )
 

@@ -7,7 +7,6 @@ import (
 	"database/sql"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/zeromicro/go-zero/core/stores/builder"
 	"github.com/zeromicro/go-zero/core/stores/cache"
@@ -40,13 +39,13 @@ type (
 
 	FriendRequests struct {
 		Id           int64          `db:"id"`
-		UserId       string         `db:"user_id"`
-		ReqUid       string         `db:"req_uid"`
-		ReqMsg       sql.NullString `db:"req_msg"`
-		ReqTime      time.Time      `db:"req_time"`
-		HandleResult sql.NullInt64  `db:"handle_result"`
-		HandleMsg    sql.NullString `db:"handle_msg"`
-		HandledAt    sql.NullTime   `db:"handled_at"`
+		UserId       string         `db:"user_id"`       // 要添加的好友
+		ReqUid       string         `db:"req_uid"`       // 发起人
+		ReqMsg       sql.NullString `db:"req_msg"`       // 验证信息
+		ReqTime      int64          `db:"req_time"`      // 请求时间
+		HandleResult sql.NullInt64  `db:"handle_result"` // 处理结果
+		HandleMsg    sql.NullString `db:"handle_msg"`    // 处理信息
+		HandledAt    int64          `db:"handled_at"`    // 处理时间
 	}
 )
 

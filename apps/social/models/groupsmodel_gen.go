@@ -39,16 +39,16 @@ type (
 
 	Groups struct {
 		Id              string         `db:"id"`
-		Name            string         `db:"name"`
-		Icon            string         `db:"icon"`
-		Status          sql.NullInt64  `db:"status"`
-		CreatorUid      string         `db:"creator_uid"`
-		GroupType       int64          `db:"group_type"`
-		IsVerify        bool           `db:"is_verify"`
-		Notification    sql.NullString `db:"notification"`
-		NotificationUid sql.NullString `db:"notification_uid"`
-		CreatedAt       sql.NullTime   `db:"created_at"`
-		UpdatedAt       sql.NullTime   `db:"updated_at"`
+		Name            string         `db:"name"`             // 群名
+		Icon            string         `db:"icon"`             // 群头像
+		Status          sql.NullInt64  `db:"status"`           // 状态
+		CreatorUid      string         `db:"creator_uid"`      // 创建者ID
+		GroupType       int64          `db:"group_type"`       // 群类型
+		IsVerify        bool           `db:"is_verify"`        // 是否需要验证
+		Notification    sql.NullString `db:"notification"`     // 系统通知
+		NotificationUid sql.NullString `db:"notification_uid"` // 系统通知接收者
+		CreatedAt       int64          `db:"created_at"`       // 创建时间
+		UpdatedAt       int64          `db:"updated_at"`       // 更新时间
 	}
 )
 

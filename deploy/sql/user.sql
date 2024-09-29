@@ -1,3 +1,4 @@
+USE test;
 CREATE TABLE `users` (
                          `id` varchar(24) COLLATE utf8mb4_unicode_ci NOT NULL ,
                          `avatar` varchar(191) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',

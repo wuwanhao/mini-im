@@ -2,15 +2,14 @@ package logic
 
 import (
 	socialmodels "app/apps/social/models"
+	"app/apps/social/rpc/internal/svc"
+	"app/apps/social/rpc/rpc"
 	"app/pkg/constants"
 	"app/pkg/xerr"
 	"context"
 	"database/sql"
 	"github.com/pkg/errors"
 	"time"
-
-	"app/apps/social/rpc/internal/svc"
-	"app/apps/social/rpc/rpc"
 
 	"github.com/zeromicro/go-zero/core/logx"
 )
@@ -31,6 +30,10 @@ func NewFriendPutInLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Frien
 
 // FriendPutIn 添加好友申请
 func (l *FriendPutInLogic) FriendPutIn(in *rpc.FriendPutInReq) (*rpc.FriendPutInResp, error) {
+	// 请求时间不为 0 时取当前时间
+	if in.ReqTime == 0 {
+		in.ReqTime = time.Now().Unix()
+	}
 	// 1.判断申请人与目标好友是否已经是好友关系
 	friends, err := l.svcCtx.FriendsModel.FindByUidAndFriendUid(l.ctx, in.UserId, in.ReqUid)
 	if err != nil && err != socialmodels.ErrNotFound {
@@ -59,7 +62,7 @@ func (l *FriendPutInLogic) FriendPutIn(in *rpc.FriendPutInReq) (*rpc.FriendPutIn
 			String: in.ReqMsg,
 			Valid:  true,
 		},
-		ReqTime: time.Unix(in.ReqTime, 0), // 添加好友的时间只精确到秒
+		ReqTime: in.ReqTime, // 添加好友的时间只精确到秒
 		HandleResult: sql.NullInt64{
 			Int64: int64(constants.NoHandlerResult), // 添加好友请求创建时默认是未处理
 			Valid: true,

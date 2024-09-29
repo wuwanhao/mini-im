@@ -39,15 +39,15 @@ type (
 
 	GroupRequests struct {
 		Id            int64          `db:"id"`
-		ReqId         string         `db:"req_id"`
-		GroupId       string         `db:"group_id"`
-		ReqMsg        sql.NullString `db:"req_msg"`
-		ReqTime       sql.NullTime   `db:"req_time"`
-		JoinSource    sql.NullInt64  `db:"join_source"`
-		InviterUserId sql.NullString `db:"inviter_user_id"`
-		HandleUserId  sql.NullString `db:"handle_user_id"`
-		HandleTime    sql.NullTime   `db:"handle_time"`
-		HandleResult  sql.NullInt64  `db:"handle_result"`
+		ReqId         string         `db:"req_id"`          // 请求ID
+		GroupId       string         `db:"group_id"`        // 目标群ID
+		ReqMsg        sql.NullString `db:"req_msg"`         // 申请信息
+		ReqTime       int64          `db:"req_time"`        // 申请时间
+		JoinSource    sql.NullInt64  `db:"join_source"`     // 入群方式
+		InviterUserId sql.NullString `db:"inviter_user_id"` // 邀请人 ID
+		HandleUserId  sql.NullString `db:"handle_user_id"`  // 处理人 ID
+		HandleTime    int64          `db:"handle_time"`     // 处理时间
+		HandleResult  sql.NullInt64  `db:"handle_result"`   // 处理结果
 	}
 )
 

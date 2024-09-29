@@ -69,7 +69,7 @@ func (m *defaultFriendRequestsModel) TransUpdate(ctx context.Context, session sq
 	friendRequestsIdKey := fmt.Sprintf("%s%v", cacheFriendRequestsIdPrefix, data.Id)
 	_, err := m.ExecCtx(ctx, func(ctx context.Context, conn sqlx.SqlConn) (result sql.Result, err error) {
 		query := fmt.Sprintf("update %s set %s where `id` = ?", m.table, friendRequestsRowsWithPlaceHolder)
-		return session.ExecCtx(ctx, query, data.UserId, data.ReqUid, data.ReqMsg, data.ReqTime, data.HandleResult.Int64, data.HandleMsg.String, data.HandledAt.Time, data.Id)
+		return session.ExecCtx(ctx, query, data.UserId, data.ReqUid, data.ReqMsg, data.ReqTime, data.HandleResult.Int64, data.HandleMsg.String, data.HandledAt, data.Id)
 	}, friendRequestsIdKey)
 	return err
 }

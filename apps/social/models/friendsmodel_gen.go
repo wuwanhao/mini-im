@@ -39,11 +39,11 @@ type (
 
 	Friends struct {
 		Id        int64          `db:"id"`
-		UserId    string         `db:"user_id"`
-		FriendUid string         `db:"friend_uid"`
-		Remark    sql.NullString `db:"remark"`
-		AddSource sql.NullInt64  `db:"add_source"`
-		CreatedAt sql.NullTime   `db:"created_at"`
+		UserId    string         `db:"user_id"`    // 本用户ID
+		FriendUid string         `db:"friend_uid"` // 好友ID
+		Remark    sql.NullString `db:"remark"`     // 备注
+		AddSource sql.NullInt64  `db:"add_source"` // 添加来源
+		CreatedAt int64          `db:"created_at"` // 创建时间
 	}
 )
 

@@ -5,9 +5,10 @@ import (
 	"app/pkg/constants"
 	"app/pkg/xerr"
 	"context"
-	"fmt"
+	"database/sql"
 	"github.com/pkg/errors"
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
+	"time"
 
 	"app/apps/social/rpc/internal/svc"
 	"app/apps/social/rpc/rpc"
@@ -51,8 +52,11 @@ func (l *FriendPutInHandleLogic) FriendPutInHandle(in *rpc.FriendPutInHandleReq)
 
 	// 3.处理（事务开始）
 	currentFriendRequests.HandleResult.Int64 = int64(in.HandleResult)
-	fmt.Println(currentFriendRequests.HandleResult.Int64)
-	fmt.Println("-----------")
+	currentFriendRequests.HandledAt = time.Now().Unix()
+	currentFriendRequests.HandleMsg = sql.NullString{
+		String: in.HandleMsg,
+		Valid:  true,
+	}
 	err = l.svcCtx.FriendRequestsModel.TransCtx(l.ctx, func(ctx context.Context, session sqlx.Session) error {
 		//  3.1 修改好友关系状态
 		if err := l.svcCtx.FriendRequestsModel.TransUpdate(ctx, session, currentFriendRequests); err != nil {
@@ -65,10 +69,12 @@ func (l *FriendPutInHandleLogic) FriendPutInHandle(in *rpc.FriendPutInHandleReq)
 				{
 					UserId:    currentFriendRequests.ReqUid,
 					FriendUid: currentFriendRequests.UserId,
+					CreatedAt: time.Now().Unix(),
 				},
 				{
 					UserId:    currentFriendRequests.UserId,
 					FriendUid: currentFriendRequests.ReqUid,
+					CreatedAt: time.Now().Unix(),
 				},
 			}
 			_, err := l.svcCtx.FriendsModel.TransBatchInsert(ctx, session, friends...)
