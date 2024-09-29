@@ -23,8 +23,10 @@ func NewGroupPutInLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GroupP
 	}
 }
 
+// todo 提交加群申请
 func (l *GroupPutInLogic) GroupPutIn(in *rpc.GroupPutInReq) (*rpc.GroupPutInResp, error) {
 	// todo: add your logic here and delete this line
+	l.Logger.Info("GroupPutIn", in)
 
 	return &rpc.GroupPutInResp{}, nil
 }
