@@ -4,7 +4,7 @@ package types
 type User struct {
 	Id       string `json:"id"`
 	NickName string `json:"nickname"`
-	Mobile   string `json:"mobile"`
+	Phone    string `json:"phone"`
 	Sex      byte   `json:"sex"`
 	Avatar   string `json:"avatar"`
 }

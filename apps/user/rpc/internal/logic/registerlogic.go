@@ -36,7 +36,7 @@ func NewRegisterLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Register
 
 func (l *RegisterLogic) Register(in *user.RegisterRequest) (*user.RegisterResponse, error) {
 	// 1.检查手机号是否已经注册过
-	userEntity, err := l.svcCtx.UserModels.FindByPhone(l.ctx, in.Phone)
+	userEntity, err := l.svcCtx.UserModels.FindUserByNameWithNoCache(l.ctx, in.Phone)
 	if err != nil && err != models.ErrNotFound {
 		return nil, errors.WithStack(err)
 	}

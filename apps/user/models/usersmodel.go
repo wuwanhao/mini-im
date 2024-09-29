@@ -22,6 +22,7 @@ type (
 		FindByPhone(ctx context.Context, phone string) (*Users, error)
 		FindUserByName(ctx context.Context, name string) ([]*Users, error)
 		FindUserByIds(ctx context.Context, ids []string) ([]*Users, error)
+		FindUserByNameWithNoCache(ctx context.Context, phone string) (*Users, error)
 	}
 
 	// customUsersModel继承了默认模型defaultUsersModel的所有功能，可以使用 defaultUserModel 的所有方法，并可以扩展更多自定义方法
@@ -60,6 +61,19 @@ func (c *customUsersModel) FindUserByName(ctx context.Context, name string) ([]*
 		return nil, err
 	}
 
+}
+
+// FindUserByNameWithNoCache 通过手机号查询用户详细信息
+func (c *customUsersModel) FindUserByNameWithNoCache(ctx context.Context, phone string) (*Users, error) {
+	query := fmt.Sprintf("select %s from %s where `phone` = ?", usersRows, c.table)
+	var resp Users
+	err := c.QueryRowNoCacheCtx(ctx, &resp, query, phone)
+	switch err {
+	case nil:
+		return &resp, nil
+	default:
+		return nil, err
+	}
 }
 
 // FindUserByIds 通过id查询用户详细信息
