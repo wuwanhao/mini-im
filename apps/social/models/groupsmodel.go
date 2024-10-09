@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/zeromicro/go-zero/core/stores/cache"
 	"github.com/zeromicro/go-zero/core/stores/sqlx"
+	"strings"
 )
 
 var _ GroupsModel = (*customGroupsModel)(nil)
@@ -16,6 +17,7 @@ type (
 	GroupsModel interface {
 		groupsModel
 		FindOneByName(ctx context.Context, name string) (*Groups, error)
+		ListByGroupIds(ctx context.Context, ids []string) ([]*Groups, error)
 		TransCtx(ctx context.Context, fn func(ctx context.Context, session sqlx.Session) error) error
 		TransCtxInsert(ctx context.Context, session sqlx.Session, data *Groups) (sql.Result, error)
 	}
@@ -38,6 +40,17 @@ func (c *customGroupsModel) FindOneByName(ctx context.Context, name string) (*Gr
 	}
 
 	return &groups, nil
+}
+
+// ListByGroupIds 根据群 Id 查找群列表
+func (c *customGroupsModel) ListByGroupIds(ctx context.Context, ids []string) ([]*Groups, error) {
+	query := fmt.Sprintf("select %s from %s where id in ?", groupsRows, c.table)
+	var groupsList []*Groups
+	err := c.QueryRowNoCacheCtx(ctx, &groupsList, query, "("+strings.Join(ids, "','")+")")
+	if err != nil {
+		return nil, err
+	}
+	return groupsList, nil
 }
 
 // Trans 用于执行事务的方法

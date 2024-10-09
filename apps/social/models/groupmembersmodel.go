@@ -16,6 +16,9 @@ type (
 	GroupMembersModel interface {
 		groupMembersModel
 		TransCtxInsert(ctx context.Context, session sqlx.Session, data *GroupMembers) (sql.Result, error)
+		ListByUserId(ctx context.Context, userId string) ([]*GroupMembers, error)
+		ListByGroupId(ctx context.Context, groupId string) ([]*GroupMembers, error)
+		ListByGroupIdAndUserId(ctx context.Context, groupId, userId string) (*GroupMembers, error)
 	}
 
 	customGroupMembersModel struct {
@@ -35,6 +38,39 @@ func (c *customGroupMembersModel) TransCtxInsert(ctx context.Context, session sq
 		return conn.ExecCtx(ctx, query, data.GroupId, data.UserId, data.RoleLevel, data.JoinTime, data.JoinSource, data.InviterUid, data.OperatorUid)
 	}, groupMembersIdKey)
 	return ret, err
+}
+
+// ListByUserId 根据 userId 获取 群-用户 列表
+func (c *customGroupMembersModel) ListByUserId(ctx context.Context, userId string) ([]*GroupMembers, error) {
+	query := fmt.Sprintf("select %s from %s where `user_id` = ?", groupMembersRows, c.table)
+	var resp []*GroupMembers
+	err := c.QueryRowsNoCacheCtx(ctx, &resp, query, userId)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+// ListByGroupId 根据 groupId 获取 群-用户 列表
+func (c *customGroupMembersModel) ListByGroupId(ctx context.Context, groupId string) ([]*GroupMembers, error) {
+	query := fmt.Sprintf("select %s from %s where `group_id` = ?", groupMembersRows, c.table)
+	var resp []*GroupMembers
+	err := c.QueryRowsNoCacheCtx(ctx, &resp, query, groupId)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+// ListByGroupIdAndUserId 根据 groupId 和 userId 获取 群-用户 列表
+func (c *customGroupMembersModel) ListByGroupIdAndUserId(ctx context.Context, groupId, userId string) (*GroupMembers, error) {
+	query := fmt.Sprintf("select %s from %s where `group_id` = ? and `user_id` = ?", groupMembersRows, c.table)
+	var resp *GroupMembers
+	err := c.QueryRowNoCacheCtx(ctx, &resp, query, groupId, userId)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
 }
 
 // NewGroupMembersModel returns a model for the database table.
