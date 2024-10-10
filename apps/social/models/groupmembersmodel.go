@@ -18,7 +18,8 @@ type (
 		TransCtxInsert(ctx context.Context, session sqlx.Session, data *GroupMembers) (sql.Result, error)
 		ListByUserId(ctx context.Context, userId string) ([]*GroupMembers, error)
 		ListByGroupId(ctx context.Context, groupId string) ([]*GroupMembers, error)
-		ListByGroupIdAndUserId(ctx context.Context, groupId, userId string) (*GroupMembers, error)
+		FindByGroupIdAndUserId(ctx context.Context, groupId, userId string) (*GroupMembers, error)
+		FindByGroupIdAndInvitorId(ctx context.Context, groupId, invitorId string) (*GroupMembers, error)
 	}
 
 	customGroupMembersModel struct {
@@ -62,11 +63,22 @@ func (c *customGroupMembersModel) ListByGroupId(ctx context.Context, groupId str
 	return resp, nil
 }
 
-// ListByGroupIdAndUserId 根据 groupId 和 userId 获取 群-用户 列表
-func (c *customGroupMembersModel) ListByGroupIdAndUserId(ctx context.Context, groupId, userId string) (*GroupMembers, error) {
+// FindByGroupIdAndUserId 根据 groupId 和 userId 获取 群-用户 列表
+func (c *customGroupMembersModel) FindByGroupIdAndUserId(ctx context.Context, groupId, userId string) (*GroupMembers, error) {
 	query := fmt.Sprintf("select %s from %s where `group_id` = ? and `user_id` = ?", groupMembersRows, c.table)
 	var resp *GroupMembers
 	err := c.QueryRowNoCacheCtx(ctx, &resp, query, groupId, userId)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+// FindByGroupIdAndUserId 根据 groupId 和 invitorId 获取 群-用户 列表
+func (c *customGroupMembersModel) FindByGroupIdAndInvitorId(ctx context.Context, groupId, InvitorId string) (*GroupMembers, error) {
+	query := fmt.Sprintf("select %s from %s where `group_id` = ? and `inviter_uid` = ?", groupMembersRows, c.table)
+	var resp *GroupMembers
+	err := c.QueryRowNoCacheCtx(ctx, &resp, query, groupId, InvitorId)
 	if err != nil {
 		return nil, err
 	}

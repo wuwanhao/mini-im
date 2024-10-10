@@ -46,7 +46,11 @@ func (l *GroupCreateLogic) GroupCreate(in *rpc.GroupCreateReq) (*rpc.GroupCreate
 		Name:       in.Name,
 		Icon:       in.Icon,
 		CreatorUid: in.CreatorUid,
-		IsVerify:   false,
+		Status: sql.NullInt64{
+			Int64: int64(in.Status),
+			Valid: true,
+		},
+		IsVerify: false,
 	}
 	// 2.1 事务开始
 	err = l.svcCtx.GroupsModel.TransCtx(l.ctx, func(ctx context.Context, session sqlx.Session) error {
