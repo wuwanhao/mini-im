@@ -64,8 +64,9 @@ type FriendPutInResp struct {
 }
 
 type FriendPutInHandleReq struct {
-	FriendReqId  int32 `json:"friend_req_id,omitempty"`
-	HandleResult int32 `json:"handle_result,omitempty"` // 处理结果
+	FriendReqId  int32  `json:"friend_req_id,omitempty"`
+	HandleResult int32  `json:"handle_result,omitempty"` // 处理结果
+	HandleMsg    string `json:"handle_msg,omitempty"`    // 处理结果信息
 }
 
 type FriendPutInHandleResp struct {

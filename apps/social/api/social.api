@@ -71,8 +71,9 @@ type (
 
 type (
 	FriendPutInHandleReq {
-		FriendReqId  int32 `json:"friend_req_id,omitempty"`
-		HandleResult int32 `json:"handle_result,omitempty"` // 处理结果
+		FriendReqId  int32  `json:"friend_req_id,omitempty"`
+		HandleResult int32  `json:"handle_result,omitempty"` // 处理结果
+		HandleMsg    string `json:"handle_msg,omitempty"`    // 处理结果信息
 	}
 	FriendPutInHandleResp {
 	}
@@ -160,15 +161,15 @@ service social {
 	@handler friendPutIn
 	post /friend/putIn (FriendPutInReq) returns (FriendPutInResp)
 
-	@doc "好友申请处理"
+	@doc "处理好友申请"
 	@handler friendPutInHandle
 	put /friend/putIn (FriendPutInHandleReq) returns (FriendPutInHandleResp)
 
-	@doc "好友申请列表"
+	@doc "获取好友申请列表"
 	@handler friendPutInList
 	get /friend/putIns (FriendPutInListReq) returns (FriendPutInListResp)
 
-	@doc "好友列表"
+	@doc "获取好友列表"
 	@handler friendList
 	get /friends (FriendListReq) returns (FriendListResp)
 }
@@ -179,7 +180,7 @@ service social {
 	jwt: JwtAuth
 )
 service social {
-	@doc "创群"
+	@doc "新建群"
 	@handler createGroup
 	post /group (GroupCreateReq) returns (GroupCreateResp)
 
@@ -199,7 +200,7 @@ service social {
 	@handler groupList
 	get /groups (GroupListRep) returns (GroupListResp)
 
-	@doc "成员列表列表"
+	@doc "群成员列表"
 	@handler groupUserList
 	get /group/users (GroupUserListReq) returns (GroupUserListResp)
 }

@@ -1,6 +1,7 @@
 package friend
 
 import (
+	"app/apps/social/rpc/socialclient"
 	"context"
 
 	"app/apps/social/api/internal/svc"
@@ -23,8 +24,14 @@ func NewFriendPutInHandleLogic(ctx context.Context, svcCtx *svc.ServiceContext) 
 	}
 }
 
+// 处理好友申请
 func (l *FriendPutInHandleLogic) FriendPutInHandle(req *types.FriendPutInHandleReq) (resp *types.FriendPutInHandleResp, err error) {
-	// todo: add your logic here and delete this line
+	// rpc 调用
+	_, err = l.svcCtx.SocialRpc.FriendPutInHandle(l.ctx, &socialclient.FriendPutInHandleReq{
+		FriendReqId:  req.FriendReqId,
+		HandleResult: req.HandleResult,
+		HandleMsg:    req.HandleMsg,
+	})
 
 	return
 }
