@@ -1,7 +1,10 @@
 package logic
 
 import (
+	"app/pkg/xerr"
 	"context"
+	"github.com/jinzhu/copier"
+	"github.com/pkg/errors"
 
 	"app/apps/social/rpc/internal/svc"
 	"app/apps/social/rpc/rpc"
@@ -23,8 +26,17 @@ func NewGroupPutInListLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Gr
 	}
 }
 
+// 获取某个群的加群申请列表
 func (l *GroupPutInListLogic) GroupPutInList(in *rpc.GroupPutInListReq) (*rpc.GroupPutInListResp, error) {
-	// todo: add your logic here and delete this line
 
-	return &rpc.GroupPutInListResp{}, nil
+	groupRequests, err := l.svcCtx.GroupRequestsModel.ListNoHanderByGroupId(l.ctx, in.GroupId)
+	if err != nil {
+		return nil, errors.Wrapf(xerr.NewDBError(), "list group req err:%v, req:%+v", err, in)
+	}
+	var groupRequestsList []*rpc.GroupRequests
+	copier.Copy(&groupRequestsList, groupRequests)
+
+	return &rpc.GroupPutInListResp{
+		List: groupRequestsList,
+	}, nil
 }
