@@ -44,9 +44,9 @@ func (c *customGroupsModel) FindOneByName(ctx context.Context, name string) (*Gr
 
 // ListByGroupIds 根据群 Id 查找群列表
 func (c *customGroupsModel) ListByGroupIds(ctx context.Context, ids []string) ([]*Groups, error) {
-	query := fmt.Sprintf("select %s from %s where id in ?", groupsRows, c.table)
+	query := fmt.Sprintf("select %s from %s where `id` in ('%s')", groupsRows, c.table, strings.Join(ids, "','"))
 	var groupsList []*Groups
-	err := c.QueryRowNoCacheCtx(ctx, &groupsList, query, "("+strings.Join(ids, "','")+")")
+	err := c.QueryRowsNoCacheCtx(ctx, &groupsList, query)
 	if err != nil {
 		return nil, err
 	}
