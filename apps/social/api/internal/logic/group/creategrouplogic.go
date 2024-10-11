@@ -1,6 +1,8 @@
 package group
 
 import (
+	"app/apps/social/rpc/socialclient"
+	"app/pkg/ctxdata"
 	"context"
 
 	"app/apps/social/api/internal/svc"
@@ -23,8 +25,17 @@ func NewCreateGroupLogic(ctx context.Context, svcCtx *svc.ServiceContext) *Creat
 	}
 }
 
+// CreateGroup 创建群
 func (l *CreateGroupLogic) CreateGroup(req *types.GroupCreateReq) (resp *types.GroupCreateResp, err error) {
-	// todo: add your logic here and delete this line
+	uid := ctxdata.GetUid(l.ctx)
+	_, err = l.svcCtx.SocialRpc.GroupCreate(l.ctx, &socialclient.GroupCreateReq{
+		Name:       req.Name,
+		Icon:       req.Icon,
+		CreatorUid: uid,
+	})
+	if err != nil {
+		return nil, err
+	}
 
 	return
 }

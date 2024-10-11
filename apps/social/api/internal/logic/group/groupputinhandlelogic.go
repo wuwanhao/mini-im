@@ -1,6 +1,9 @@
 package group
 
 import (
+	"app/apps/social/rpc/socialclient"
+	"app/pkg/constants"
+	"app/pkg/ctxdata"
 	"context"
 
 	"app/apps/social/api/internal/svc"
@@ -23,8 +26,23 @@ func NewGroupPutInHandleLogic(ctx context.Context, svcCtx *svc.ServiceContext) *
 	}
 }
 
+// GroupPutInHandle 加群请求处理
 func (l *GroupPutInHandleLogic) GroupPutInHandle(req *types.GroupPutInHandleRep) (resp *types.GroupPutInHandleResp, err error) {
-	// todo: add your logic here and delete this line
+	uid := ctxdata.GetUid(l.ctx)
+
+	_, err = l.svcCtx.SocialRpc.GroupPutInHandle(l.ctx, &socialclient.GroupPutInHandleReq{
+		GroupReqId:   req.GroupReqId,
+		HandleResult: req.HandleResult,
+		HandleUid:    uid,
+		GroupId:      req.GroupId,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if constants.HandlerResult(req.HandleResult) != constants.PassHandlerResult {
+		return
+	}
 
 	return
 }

@@ -1,6 +1,8 @@
 package group
 
 import (
+	"app/apps/social/rpc/socialclient"
+	"app/pkg/ctxdata"
 	"context"
 
 	"app/apps/social/api/internal/svc"
@@ -23,8 +25,16 @@ func NewGroupPutInLogic(ctx context.Context, svcCtx *svc.ServiceContext) *GroupP
 	}
 }
 
+// 申请加群
 func (l *GroupPutInLogic) GroupPutIn(req *types.GroupPutInRep) (resp *types.GroupPutInResp, err error) {
-	// todo: add your logic here and delete this line
+	uid := ctxdata.GetUid(l.ctx)
 
+	_, err = l.svcCtx.SocialRpc.GroupPutIn(l.ctx, &socialclient.GroupPutInReq{
+		GroupId:    req.GroupId,
+		ReqId:      uid,
+		ReqMsg:     req.ReqMsg,
+		ReqTime:    req.ReqTime,
+		JoinSource: int32(req.JoinSource),
+	})
 	return
 }
