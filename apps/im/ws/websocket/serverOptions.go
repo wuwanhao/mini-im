@@ -21,6 +21,7 @@ func newOption(opts ...Options) option {
 	return o
 }
 
+// Custom authentication method
 func WithAuthentication(authentication Authentication) Options {
 	return func(opt *option) {
 		opt.Authentication = authentication

@@ -7,7 +7,7 @@ import (
 )
 
 type Authentication interface {
-	Auth(s *Server, w http.ResponseWriter, r *http.Request) bool // 认证的方法
+	Auth(w http.ResponseWriter, r *http.Request) bool // 认证的方法
 	UserId(r *http.Request) string                               // 从 http 请求中获取 userId
 }
 
@@ -15,7 +15,7 @@ type Authentication interface {
 type authentication struct {
 }
 
-func (a *authentication) Auth(s *Server, w http.ResponseWriter, r *http.Request) bool {
+func (a *authentication) Auth(w http.ResponseWriter, r *http.Request) bool {
 	return true
 }
 

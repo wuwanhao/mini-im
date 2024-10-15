@@ -24,12 +24,14 @@ func main() {
 		panic(err)
 	}
 
-	// 创建一个 websocket 服务器实例
-	srv := server.NewServer(c.ListenOn)
-	defer srv.Stop()
-
 	// 装载服务上下文
 	ctx := svc.NewServiceContext(c)
+
+	// 创建一个 websocket 服务器实例
+	srv := server.NewServer(c.ListenOn, server.WithAuthentication(handler.NewJwtAuto(ctx)))
+	defer srv.Stop()
+
+
 	// 注册路由
 	handler.RegisterHandlers(srv, ctx)
 
