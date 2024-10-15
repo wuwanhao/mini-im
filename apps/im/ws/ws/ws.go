@@ -2,6 +2,7 @@ package ws
 
 import (
 	"app/apps/im/ws/internal/config"
+	"app/apps/im/ws/internal/handler"
 	"app/apps/im/ws/internal/svc"
 	server "app/apps/im/ws/websocket"
 	"flag"
@@ -28,7 +29,9 @@ func main() {
 	defer srv.Stop()
 
 	// 装载服务上下文
-	svc.NewServiceContext(c)
+	ctx := svc.NewServiceContext(c)
+	// 注册路由
+	handler.RegisterHandlers(srv, ctx)
 
 	fmt.Println("ws server starting at %v ...\n", c.ListenOn)
 	srv.Start() // 启动服务器

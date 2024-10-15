@@ -39,13 +39,13 @@ func NewServer(addr string, opts ...Options) *Server {
 		opt:        opt,
 	}
 }
-	
+
 // Server handle 将 http 升级为 websocket
 func (s *Server) ServerWs(w http.ResponseWriter, r *http.Request) {
 	// 注册异常处理函数
 	defer func() {
 		if r := recover(); r != nil {
-			s.Errorf("Server handler recover err: %v", r)
+			s.Errorf("Server Handler recover err: %v", r)
 		}
 	}()
 
@@ -110,7 +110,7 @@ func (s *Server) Close(conn *websocket.Conn) {
 // 添加路由
 func (s *Server) AddRoutes(routes []Route) {
 	for _, route := range routes {
-		s.routes[route.Method] = route.handler
+		s.routes[route.Method] = route.Handler
 	}
 }
 
@@ -154,4 +154,51 @@ func (s *Server) GetConn(uid string) *websocket.Conn {
 	s.RWMutex.Lock()
 	defer s.RWMutex.Unlock()
 	return s.userToConn[uid]
+}
+
+// 根据用户 ID 批量获取连接
+func (s *Server) GetConns(uids ...string) []*websocket.Conn {
+	if len(uids) == 0 {
+		return nil
+	}
+	s.RWMutex.Lock()
+	defer s.RWMutex.Unlock()
+
+	res := make([]*websocket.Conn, 0, len(uids))
+	for _, uid := range uids {
+		res = append(res, s.userToConn[uid])
+	}
+	return res
+}
+
+// 通过 userId 发送消息
+func (s *Server) SendByUserId(msg interface{}, userIds ...string) error {
+	if len(userIds) == 0 {
+		return nil
+	}
+
+	return s.Send(msg, s.GetConns(userIds...)...)
+}
+
+// 发送消息
+func (s *Server) Send(msg interface{}, conn ...*websocket.Conn) error {
+	if len(conn) == 0 {
+		return nil
+	}
+
+	// 序列化消息
+	data, err := json.Marshal(msg)
+	if err != nil {
+		return nil
+	}
+
+	// 将序列化后的消息信息发送到所有的连接中
+	for _, c := range conn {
+		if err := c.WriteMessage(websocket.TextMessage, data); err != nil {
+			return err
+		}
+	}
+
+	return nil
+
 }
