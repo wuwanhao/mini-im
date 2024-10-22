@@ -19,24 +19,27 @@ type Server struct {
 	upGrader websocket.Upgrader    // websocket升级器
 	logx.Logger
 
-	// 用户连接信息
+	// 用户-连接关系映射
 	connToUser map[*websocket.Conn]string
 	userToConn map[string]*websocket.Conn
 
-	opt option
+	patten string
+	opt    option
 }
 
 func NewServer(addr string, opts ...Options) *Server {
-	// 这里使用了函数选项设计模式
+	// 这里使用了函数选项设计模式，进行服务的初始化工作
 	opt := newOption(opts...)
 	return &Server{
-		routes:     make(map[string]HandleFunc),
-		addr:       addr,
-		upGrader:   websocket.Upgrader{},
-		Logger:     logx.WithContext(context.Background()),
-		connToUser: make(map[*websocket.Conn]string),
-		userToConn: make(map[string]*websocket.Conn),
-		opt:        opt,
+		routes:         make(map[string]HandleFunc),
+		addr:           addr,
+		upGrader:       websocket.Upgrader{},
+		authentication: opt.Authentication,
+		Logger:         logx.WithContext(context.Background()),
+		connToUser:     make(map[*websocket.Conn]string),
+		userToConn:     make(map[string]*websocket.Conn),
+		patten:         opt.pattern,
+		opt:            opt,
 	}
 }
 
@@ -50,7 +53,7 @@ func (s *Server) ServerWs(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	// 身份认证
-	if !s.opt.Authentication.Auth(s, w, r) {
+	if !s.opt.Authentication.Auth(w, r) {
 		s.Info("auth failed")
 		return
 	}
@@ -58,11 +61,12 @@ func (s *Server) ServerWs(w http.ResponseWriter, r *http.Request) {
 	conn, err := s.upGrader.Upgrade(w, r, nil)
 	if err != nil {
 		s.Errorf("upgrade http conn err: %v", err)
+		return
 	}
 
 	// 添加连接记录，会有并发问题
 	s.AddConn(conn, r)
-	// 处理连接
+	// 用一个协程来处理连接
 	go s.HandleConn(conn)
 }
 
@@ -70,31 +74,39 @@ func (s *Server) ServerWs(w http.ResponseWriter, r *http.Request) {
 func (s *Server) HandleConn(conn *websocket.Conn) {
 	// 阻塞处理
 	for {
+		// 获取请求消息
 		_, msg, err := conn.ReadMessage()
 		if err != nil {
 			s.Errorf("websocket read message err: %v", err)
-			// 关闭连接
+			// 获取消息失败的时候关闭连接
 			s.Close(conn)
 			return
 		}
 
-		// 拿到 websocket request param
+		// 拿到 websocket 请求参数
 		message := &Message{}
-		json.Unmarshal(msg, message)
+		if err = json.Unmarshal(msg, message); err != nil {
+			s.Errorf("json unmarshal message err: %v, msg: %v", err, msg)
+			s.Close(conn)
+			return
+		}
 
-		// 判断是否有对应的处理器来处理此请求
+		// 根据请求的 method 分发路由并执行
 		if handler, ok := s.routes[message.Method]; ok {
 			handler(s, conn, message)
 		} else {
-			conn.WriteMessage(websocket.TextMessage, []byte(fmt.Sprintf("不存在的请求方法：%v 请检查", message.Method)))
+			err := conn.WriteMessage(websocket.TextMessage, []byte(fmt.Sprintf("不存在的请求方法：%v 请检查", message.Method)))
+			if err != nil {
+				return
+			}
 		}
 	}
 }
 
 // 启动服务器
 func (s *Server) Start() {
-	http.HandleFunc("/ws", s.ServerWs)
-	http.ListenAndServe(s.addr, nil)
+	http.HandleFunc(s.patten, s.ServerWs)
+	s.Info(http.ListenAndServe(s.addr, nil))
 }
 
 // 停止服务器
@@ -105,6 +117,14 @@ func (s *Server) Stop() {
 // 关闭某个 websocket 连接
 func (s *Server) Close(conn *websocket.Conn) {
 	conn.Close()
+
+	s.RWMutex.Lock()
+	defer s.RWMutex.Unlock()
+
+	// 删除对应的 uid-conn 连接
+	uid := s.connToUser[conn]
+	delete(s.connToUser, conn)
+	delete(s.userToConn, uid)
 }
 
 // 添加路由
@@ -127,8 +147,9 @@ func (s *Server) AddConn(conn *websocket.Conn, r *http.Request) {
 
 // 根据连接获取用户
 func (s *Server) GetUsers(conns ...*websocket.Conn) []string {
-	s.RWMutex.Lock()
-	defer s.RWMutex.Unlock()
+	// 这里使用读锁
+	s.RWMutex.RLock()
+	defer s.RWMutex.RUnlock()
 
 	var res []string
 	if len(conns) == 0 {
@@ -151,8 +172,9 @@ func (s *Server) GetUsers(conns ...*websocket.Conn) []string {
 
 // 根据用户获取连接
 func (s *Server) GetConn(uid string) *websocket.Conn {
-	s.RWMutex.Lock()
-	defer s.RWMutex.Unlock()
+	// 这里使用读锁
+	s.RWMutex.RLock()
+	defer s.RWMutex.RUnlock()
 	return s.userToConn[uid]
 }
 
