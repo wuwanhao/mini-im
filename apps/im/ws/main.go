@@ -1,4 +1,4 @@
-package ws
+package main
 
 import (
 	"app/apps/im/ws/internal/config"
@@ -7,12 +7,13 @@ import (
 	server "app/apps/im/ws/websocket"
 	"flag"
 	"fmt"
-
 	"github.com/zeromicro/go-zero/core/conf"
 )
 
-var configFile = flag.String("f", "etc/local/ws.yaml", "the config file")
+var configFile = flag.String("f", "etc/local/im.yaml", "the config file")
 
+
+// websocket 服务启动入口
 func main() {
 	// 加载配置文件
 	flag.Parse()
@@ -31,11 +32,10 @@ func main() {
 	srv := server.NewServer(c.ListenOn, server.WithAuthentication(handler.NewJwtAuto(ctx)))
 	defer srv.Stop()
 
-
 	// 注册路由
 	handler.RegisterHandlers(srv, ctx)
 
-	fmt.Println("ws server starting at %v ...\n", c.ListenOn)
+	fmt.Printf("ws server starting at %v ...\n", c.ListenOn)
 	srv.Start() // 启动服务器
 
 }
