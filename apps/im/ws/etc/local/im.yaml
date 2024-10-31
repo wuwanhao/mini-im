@@ -1,4 +1,4 @@
 Name: im.ws
 ListenOn: 0.0.0.0:10090
-JwtSecret:
+JwtAuth:
   AccessSecret: "12345678"

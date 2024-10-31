@@ -33,7 +33,12 @@ func NewServer(addr string, opts ...Options) *Server {
 	return &Server{
 		routes:         make(map[string]HandleFunc),
 		addr:           addr,
-		upGrader:       websocket.Upgrader{},
+		upGrader:       websocket.Upgrader{
+			// 设置 websocket 允许跨域
+			CheckOrigin: func(r *http.Request) bool {
+				return true
+			},
+		},
 		authentication: opt.Authentication,
 		Logger:         logx.WithContext(context.Background()),
 		connToUser:     make(map[*websocket.Conn]string),
@@ -52,15 +57,18 @@ func (s *Server) ServerWs(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 
-	// 身份认证
-	if !s.opt.Authentication.Auth(w, r) {
-		s.Info("auth failed")
-		return
-	}
 	// 升级连接，由http升级为 websocket
 	conn, err := s.upGrader.Upgrade(w, r, nil)
 	if err != nil {
 		s.Errorf("upgrade http conn err: %v", err)
+		return
+	}
+
+	// 身份认证
+	if !s.opt.Authentication.Auth(w, r) {
+		s.Info("auth failed")
+		conn.WriteMessage(websocket.TextMessage, []byte("认证失败"))
+		conn.Close()
 		return
 	}
 

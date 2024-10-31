@@ -6,7 +6,7 @@ type Config struct {
 	service.ServiceConf
 	ListenOn string
 
-	JwtSecret struct {
+	JwtAuth struct {
 		AccessSecret string
 	}
 }

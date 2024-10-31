@@ -9,7 +9,7 @@ import (
 func RegisterHandlers(srv *websocket.Server, svc *svc.ServiceContext) {
 	srv.AddRoutes([]websocket.Route{
 		{
-			Method:  "user.OnLine",
+			Method:  "user.onLine",
 			Handler: user.OnLine(svc),
 		},
 	})
